@@ -1,5 +1,6 @@
 dist/
 .expo/
 prototipos/
+src/infrastructure/db/migrations/
 *.md
 package-lock.json

@@ -1,4 +1,7 @@
 const { defineConfig } = require('eslint/config');
 const expoConfig = require('eslint-config-expo/flat');
 
-module.exports = defineConfig([expoConfig, { ignores: ['dist/*', 'prototipos/*'] }]);
+module.exports = defineConfig([
+  expoConfig,
+  { ignores: ['dist/*', 'prototipos/*', 'src/infrastructure/db/migrations/*'] },
+]);
