@@ -1,0 +1,5 @@
+dist/
+.expo/
+prototipos/
+*.md
+package-lock.json
