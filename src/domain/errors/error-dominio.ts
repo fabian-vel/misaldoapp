@@ -1,4 +1,4 @@
-export type CodigoErrorDominio = 'MONTO_INVALIDO' | 'FECHA_INVALIDA';
+export type CodigoErrorDominio = 'MONTO_INVALIDO' | 'FECHA_INVALIDA' | 'PERIODO_INVALIDO';
 
 export class ErrorDominio extends Error {
   readonly codigo: CodigoErrorDominio;
