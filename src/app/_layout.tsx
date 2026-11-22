@@ -10,6 +10,8 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 
+import { ErrorInicio } from '@/ui/components/ErrorInicio';
+import { useInicioApp } from '@/ui/hooks/use-inicio-app';
 import { colores, fuentes } from '@/ui/theme/tokens';
 
 SplashScreen.preventAutoHideAsync();
@@ -33,7 +35,8 @@ export default function RootLayout() {
     [fuentes.cuerpoMedio]: Inter_500Medium,
     [fuentes.cuerpoSemibold]: Inter_600SemiBold,
   });
-  const listo = cargadas || !!error;
+  const { estado, reintentar } = useInicioApp();
+  const listo = (cargadas || !!error) && estado !== 'cargando';
 
   useEffect(() => {
     if (listo) SplashScreen.hideAsync();
@@ -44,10 +47,14 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={tema}>
       <StatusBar style="light" />
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="registro" options={{ presentation: 'modal' }} />
-      </Stack>
+      {estado === 'error' ? (
+        <ErrorInicio alReintentar={reintentar} />
+      ) : (
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="registro" options={{ presentation: 'modal' }} />
+        </Stack>
+      )}
     </ThemeProvider>
   );
 }
