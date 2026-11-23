@@ -1,7 +1,8 @@
-import { and, asc, desc, eq, gte, lte } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, inArray, lte } from 'drizzle-orm';
 
 import { ErrorDominio } from '../../../domain/errors/error-dominio';
 import type { Repositorios, UnidadDeTrabajo } from '../../../domain/ports/repositorios';
+import { crearFecha } from '../../../domain/value-objects/fecha';
 import {
   categoria,
   corteQuincena,
@@ -78,6 +79,13 @@ export function crearRepositorios(db: BaseDatos): Repositorios {
           .limit(limite)
           .all()
           .map(aMovimiento),
+      listarPorOcurrencia: (ocurrenciaId) =>
+        db
+          .select()
+          .from(movimiento)
+          .where(eq(movimiento.ocurrenciaId, ocurrenciaId))
+          .all()
+          .map(aMovimiento),
     },
 
     reglas: {
@@ -132,6 +140,27 @@ export function crearRepositorios(db: BaseDatos): Repositorios {
           .orderBy(asc(ocurrencia.fecha))
           .all()
           .map(aOcurrencia),
+      ultimaFecha: (reglaId) => {
+        const fila = db
+          .select({ fecha: ocurrencia.fecha })
+          .from(ocurrencia)
+          .where(eq(ocurrencia.reglaId, reglaId))
+          .orderBy(desc(ocurrencia.fecha))
+          .limit(1)
+          .get();
+        return fila ? crearFecha(fila.fecha) : null;
+      },
+      ultimaPagadaDeReglas: (reglaIds) => {
+        if (reglaIds.length === 0) return null;
+        const fila = db
+          .select()
+          .from(ocurrencia)
+          .where(and(inArray(ocurrencia.reglaId, [...reglaIds]), eq(ocurrencia.estado, 'PAGADA')))
+          .orderBy(desc(ocurrencia.fecha))
+          .limit(1)
+          .get();
+        return fila ? aOcurrencia(fila) : null;
+      },
     },
 
     cortes: {
@@ -149,6 +178,9 @@ export function crearRepositorios(db: BaseDatos): Repositorios {
       },
       listar: () =>
         db.select().from(corteQuincena).orderBy(desc(corteQuincena.fechaInicio)).all().map(aCorte),
+      eliminar: (id) => {
+        db.delete(corteQuincena).where(eq(corteQuincena.id, id)).run();
+      },
     },
   };
 }

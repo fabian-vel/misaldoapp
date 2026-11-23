@@ -27,6 +27,7 @@ export interface MovimientoRepositorio {
   eliminar(id: string): void;
   listar(): Movimiento[];
   listarRecientes(limite: number): Movimiento[];
+  listarPorOcurrencia(ocurrenciaId: string): Movimiento[];
 }
 
 export interface ReglaRepositorio {
@@ -42,12 +43,16 @@ export interface OcurrenciaRepositorio {
   obtener(id: string): Ocurrencia | null;
   listarPendientes(): Ocurrencia[];
   listarEnRango(desde: Fecha, hasta: Fecha): Ocurrencia[];
+  /** Fecha de la última ocurrencia generada para la regla. */
+  ultimaFecha(reglaId: string): Fecha | null;
+  ultimaPagadaDeReglas(reglaIds: readonly string[]): Ocurrencia | null;
 }
 
 export interface CorteRepositorio {
   guardar(corte: RegistroCorte): void;
   ultimo(): RegistroCorte | null;
   listar(): RegistroCorte[];
+  eliminar(id: string): void;
 }
 
 export type Repositorios = {
