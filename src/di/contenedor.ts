@@ -1,18 +1,11 @@
-import type { Reloj } from '@/domain/ports/reloj';
-import type { Repositorios, UnidadDeTrabajo } from '@/domain/ports/repositorios';
+import { crearCasosDeUso, type CasosDeUso } from '@/application/use-cases/casos-de-uso';
 import { crearSystemClock } from '@/infrastructure/clock/system-clock';
 import { abrirBaseDatos } from '@/infrastructure/db/client';
-import {
-  crearRepositorios,
-  crearUnidadDeTrabajo,
-} from '@/infrastructure/db/repositories/repositorios-drizzle';
+import { crearUnidadDeTrabajo } from '@/infrastructure/db/repositories/repositorios-drizzle';
 import { aplicarSemillas } from '@/infrastructure/db/semillas';
+import { generarUuid } from '@/infrastructure/id/generador-uuid';
 
-export type Contenedor = {
-  readonly reloj: Reloj;
-  readonly repositorios: Repositorios;
-  readonly unidadDeTrabajo: UnidadDeTrabajo;
-};
+export type Contenedor = { readonly casos: CasosDeUso };
 
 let inicio: Promise<Contenedor> | null = null;
 
@@ -20,11 +13,13 @@ async function construir(): Promise<Contenedor> {
   const reloj = crearSystemClock();
   const db = await abrirBaseDatos();
   aplicarSemillas(db, reloj.ahora());
-  return {
+  const casos = crearCasosDeUso({
+    unidad: crearUnidadDeTrabajo(db),
     reloj,
-    repositorios: crearRepositorios(db),
-    unidadDeTrabajo: crearUnidadDeTrabajo(db),
-  };
+    generarId: generarUuid,
+  });
+  casos.quincena.generarOcurrencias();
+  return { casos };
 }
 
 /** Abre la base una sola vez; si falla, el siguiente intento vuelve a probar. */
